@@ -1,7 +1,7 @@
-from aicode.search.SearchAlgorithms import BuscaLargura
-from aicode.search.SearchAlgorithms import BuscaProfundidade
-from aicode.search.SearchAlgorithms import BuscaProfundidadeIterativa
-from aicode.search.Graph import State
+from SearchAlgorithms import BuscaLargura
+from SearchAlgorithms import BuscaProfundidade
+from SearchAlgorithms import BuscaProfundidadeIterativa
+from Graph import State
 
 # 
 # Implements a simplified version of vacuum world problem
@@ -46,8 +46,7 @@ class VacuumWorld(State):
         return sucessors
     
     def is_goal(self):
-        return (self.isLeftRoomClean and self.isRightRoomClean and 
-        (self.vacuumPosition == 'left'))
+        return (self.isLeftRoomClean and self.isRightRoomClean and (self.vacuumPosition == 'left'))
     
     def description(self):
         return "Problema do aspirador de pó, contendo duas salas"
@@ -63,7 +62,7 @@ def main():
     #
     # Executando busca em largura
     #
-    state = VacuumWorld('right', False, False, '')
+    state = VacuumWorld('left', False, False, '')
     algorithm = BuscaLargura()
     result = algorithm.search(state)
     if result != None:
@@ -75,9 +74,9 @@ def main():
     #
     # Executando busca em profundidade
     #
-    state = VacuumWorld('right', False, False, '')
+    state = VacuumWorld('left', False, False, '')
     algorithm = BuscaProfundidade()
-    result = algorithm.search(state, 300)
+    result = algorithm.search(state, 10)
     if result != None:
         print('Achou!')
         print(result.show_path())
