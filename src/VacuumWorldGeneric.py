@@ -1,3 +1,6 @@
+from functools import total_ordering
+from sqlite3 import Row
+from tkinter import E
 from aicode.search.SearchAlgorithms import BuscaProfundidadeIterativa
 from aicode.search.Graph import State
 import numpy as np
@@ -6,21 +9,53 @@ def convert_file_to_map(file):
     matriz = np.loadtxt(file, dtype=int, delimiter=';')
     return matriz
 
+def clean_room (map, row, column):
+    map[row,column]=0
+    return map
+
 class VacuumWorldGeneric(State):
 
-    def __init__(self, Map, vacuumPositionLine, vacuumPositionColumn,  op):
+    def __init__(self, Map, Row, Column,  op):
         self.Map = Map
-        self.vacuumPositionLine = vacuumPositionLine 
-        self.vacuumPositionColumn = vacuumPositionColumn 
+        self.Row = Row
+        self.Column = Column
         self.operator = op
-        self.rows, self.columns =np.size(self.Map,0), np.size(self.Map,1)
+        self.State=self.Map[Row,Column] #estado do quarto, 0 ou 1
+        self.TotalRows, self.TotalColumns =np.size(self.Map,0)-1, np.size(self.Map,1)-1
+        self.goal = np.zeros((self.TotalRows+1, self.TotalColumns+1), dtype=int)
     
+    def show(self):
+        print(self.Map)
+        print(self.Row)
+        print(self.Column)
+        print(self.TotalRows)
+        print(self.TotalColumns)
+        print(self.goal)
+
     def sucessors(self):
         sucessors = []
-    
-    
+
+        #Clean the room
+        if self.State==1:
+            map=np.copy(self.Map)
+            sucessors.append(VacuumWorldGeneric(clean_room(map,self.Row,self.Column),self.Row,self.Column,'clean'))
+        #Move left
+        if self.Column<self.TotalColumns:
+            sucessors.append(VacuumWorldGeneric(self.Map,self.Row,self.Column+1,'move right'))
+        #Move right
+        if self.Column>0:
+            sucessors.append(VacuumWorldGeneric(self.Map,self.Row,self.Column-1,'move left'))
+        #Move up
+        if self.Row<self.TotalRows:
+            sucessors.append(VacuumWorldGeneric(self.Map,self.Row+1,self.Column,'move up'))
+        #Move down
+        if self.Row>0:
+            sucessors.append(VacuumWorldGeneric(self.Map,self.Row-1,self.Column+1,'move down'))
+        return sucessors
+
     def is_goal(self):
-        pass
+        return np.array_equal(self.goal,self.Map)
+        return False
     
     def description(self):
         return "Describe the problem"
@@ -49,12 +84,18 @@ class VacuumWorldGeneric(State):
         # - para o problema do soma 1 e 2: return str(self.number)
         # - para o problema das cidades: return self.city
         #
-        None
+        return str(self.operator)
 
 
 def main():
     print('Busca em profundidade iterativa')
-    state = ProblemSpecification('')
+    file_map_path = 'data/vacuum_simple_0.txt'
+    row=0
+    column=0
+    map=convert_file_to_map(file_map_path)
+    state = VacuumWorldGeneric(map,row,column,'')
+    print(map)
+    state.show()
     algorithm = BuscaProfundidadeIterativa()
     result = algorithm.search(state)
     if result != None:
